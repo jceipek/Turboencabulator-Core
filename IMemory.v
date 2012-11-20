@@ -1,34 +1,31 @@
-
 /* memory.v
 part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
-module IMemory(clk, regWE, Addr,
-                DataIn, DataOut);
-  input clk, regWE;
-  input[9:0] Addr;
-  input[31:0] DataIn;
-  output[31:0]  DataOut;
+`define DEBUG_MODE 0
 
-  integer index;
+module IMemory(clk, ProgCounter, DataOut);
+    input clk;
+    input[9:0] ProgCounter;
+    output[31:0]  DataOut;
 
-reg [31:0] mem[1023:0];
+    reg [31:0] mem[1023:0];
 
-always @(posedge clk)
-  if (regWE)
-    mem[Addr] <= DataIn;
+    integer index; // Used only for debugging
 
-initial begin
-    // Read the code into memory
-    $readmemb("add.dat", mem);
+    initial begin
+        // Read the code into memory
+        $readmemb("add.dat", mem, 0, 1023);
 
-    // Loop through every row of memory and display it
-    for(index = 0; index < 1024; index = index + 1) begin
-        $display("mem[%d] = %b", index[9:0], mem[index]);
+        if (`DEBUG_MODE) begin
+            // Loop through every row of memory and display it
+            for(index = 0; index < 1024; index = index + 1) begin
+                $display("mem[%d] = %b", index[9:0], mem[index]);
+            end
+        end
     end
-end
 
-assign DataOut = mem[Addr];
+    assign DataOut = mem[ProgCounter];
 
 endmodule
