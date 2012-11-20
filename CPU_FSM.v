@@ -3,18 +3,18 @@ module CPU_FSM();
   // CPU parameters
   parameter HALFCLK = 5;
   
-  // Stage parameters
+  // stage parameters
   parameter IFetch = 4'h0;
   parameter Decode = 4'h1;
   parameter Execute = 4'h2;
   parameter Memory = 4'h3;
   parameter Writeback = 4'h4;
 
-  // Op parameters
+  // opcode parameters
   parameter ADD = 6'h0;
   
-  reg [3:0] state;
-  reg [3:0] op;
+  reg [3:0] stage;
+  reg [5:0] opcode;
   reg clk;
 
   always begin
@@ -22,7 +22,7 @@ module CPU_FSM();
   end
   
   always @(posedge clk) begin
-    case(state)
+    case(stage)
       IFetch:
         begin
         state = Decode;
@@ -33,7 +33,7 @@ module CPU_FSM();
         end
       Execute:
         begin
-        case(op)
+        case(opcode)
           ADD:
             ;
 
@@ -45,7 +45,7 @@ module CPU_FSM();
         end
       Memory:
         begin
-        case(op)
+        case(opcode)
           ADD:
             ;
 
@@ -57,7 +57,7 @@ module CPU_FSM();
         end
       Writeback:
         begin
-        case(op)
+        case(opcode)
           ADD:
             ;
 
