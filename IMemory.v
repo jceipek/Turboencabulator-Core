@@ -4,7 +4,7 @@ part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
-module memory(clk, regWE, Addr,
+module IMemory(clk, regWE, Addr,
                 DataIn, DataOut);
   input clk, regWE;
   input[9:0] Addr;
