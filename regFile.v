@@ -1,4 +1,9 @@
 
+/* regFile.v
+part of project Turboencabulator
+Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
+Computer Architecture, Olin College Fall 2012 */
+
 module regFile (clk, regWE, Addr, 
                 DataIn, DataOut);
   input clk, regWE;
@@ -16,3 +21,4 @@ always @(posedge clk)
 assign DataOut = registers[Addr];
 
 endmodule
+
