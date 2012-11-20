@@ -11,7 +11,7 @@ module memory(clk, regWE, Addr,
   input[31:0] DataIn;
   output[31:0]  DataOut;
   
-reg [31:0] mem[1023:0];  
+reg [31:0] mem[31:0];  
 
 always @(posedge clk)
   if (regWE)

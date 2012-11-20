@@ -1,4 +1,8 @@
-// FluffyTheGatekeeper
+/* CPU_FSM.v
+part of project Turboencabulator
+Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
+Computer Architecture, Olin College Fall 2012 */
+
 module CPU_FSM();
   // CPU parameters
   parameter HALFCLK = 5;
