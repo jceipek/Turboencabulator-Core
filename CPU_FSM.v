@@ -3,6 +3,8 @@ part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
+`include "IMemory.v"
+
 module CPU_FSM();
   // CPU parameters
   parameter HALFCLK = 5;
@@ -20,6 +22,12 @@ module CPU_FSM();
   reg [3:0] stage;
   reg [5:0] opcode;
   reg clk;
+  reg [15:0] imm;
+  reg [4:0] destReg;
+  reg [4:0] rA;
+  reg [4:0] rB;
+  reg [31:0] register;
+  reg [9:0] ProgCounter;
 
   always begin
     #HALFCLK clk = ~clk;
@@ -29,47 +37,56 @@ module CPU_FSM();
     case(stage)
       IFetch:
         begin
-        state = Decode;
+          // load memory module, give clock and pc, store stuff in dataOut
+          // NEED ProgCounter!!!
+          IMemory myMem (register, clk, ProgCounter);
+        stage = Decode;
         end
       Decode:
         begin
-        state = Execute;
+          // split register into rA, rB, rC, and rD
+          opcode = register[31:26]; 
+          rA = register[25:21];
+          rB = register[20:26];
+          imm = register[15:0];
+        stage = Execute;
         end
       Execute:
         begin
+          resExecute = register[rA] + register[rB]
         case(opcode)
-          ADD:
-            ;
+          //ADD:
+            //;
 
           // if we screw up
           default:
             $display("DIE");
         endcase
-        state = Memory;
+        stage = Memory;
         end
       Memory:
         begin
         case(opcode)
-          ADD:
-            ;
+          //ADD:
+            //;
 
           // if we screw up
           default:
             $display("DIE");
         endcase
-        state = Writeback;
+        stage = Writeback;
         end
       Writeback:
         begin
         case(opcode)
-          ADD:
-            ;
+        //  ADD:
+           // ;
 
           // if we screw up
           default:
             $display("DIE");
         endcase
-        state = IFetch;
+        stage = IFetch;
         end
         
       // if we screw up
