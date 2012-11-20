@@ -5,10 +5,11 @@ Computer Architecture, Olin College Fall 2012 */
 
 `define DEBUG_MODE 0
 
-module IMemory(clk, ProgCounter, DataOut);
+module IMemory(DataOut, clk, ProgCounter);
+    output[31:0]  DataOut;
+
     input clk;
     input[9:0] ProgCounter;
-    output[31:0]  DataOut;
 
     reg [31:0] mem[1023:0];
 
