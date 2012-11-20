@@ -29,6 +29,6 @@ initial begin
     end
 end
 
-assign DataOut = registers[Addr];
+assign DataOut = mem[Addr];
 
 endmodule
