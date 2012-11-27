@@ -78,6 +78,7 @@ module CPU_FSM();
   reg [31:0] HiValue;
   reg [31:0] LoValue;
   
+  wire [31:0] IRegisterWire;
   reg [31:0] IRegister;
   reg [5:0] opcode;
   reg [4:0] rS;
@@ -102,7 +103,7 @@ module CPU_FSM();
   wire [31:0] ReadData1, ReadData2;
   regFile regFile_0(ReadData1, ReadData2, WriteData, ReadRegister1, ReadRegister2, WriteRegister, WriteEnable, clk);
 
-  IMemory IMemory_0(IRegister, clk, ProgCounter);
+  IMemory IMemory_0(IRegisterWire, clk, ProgCounter);
         
   always begin
     #HALFCLK clk = ~clk;
@@ -114,6 +115,7 @@ module CPU_FSM();
         // load memory module, give clock and pc, store stuff in IRegister
         ProgCounter <= ProgCounter + 4;
         stage <= Decode;
+        assign IRegister = IRegisterWire;
       end
 
       Decode: begin
