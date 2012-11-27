@@ -4,6 +4,7 @@ Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
 `include "IMemory.v"
+`include "regFile.v"
 
 module CPU_FSM();
   // CPU parameters
@@ -13,6 +14,7 @@ module CPU_FSM();
   parameter Read  = 0;
   parameter Write = 1;
   parameter NULL  = 0;
+  parameter reg_ra = 31;
   
   // stage parameters
   parameter IFetch    = 4'h0;
@@ -68,20 +70,24 @@ module CPU_FSM();
 //  parameter SYSCALL   = 6'b001100;
   parameter XOR     = 6'b100110; //code complete: test pending
 
+  // CPU regs
   reg clk;
   reg [3:0] stage;
   reg [9:0] ProgCounter;
   reg [31:0] IRegister;
   reg [5:0] opcode;
-  reg [4:0] rS_value;
-  reg [4:0] rT_value;
+  reg [4:0] rS;
+  reg [4:0] rT;
   reg [4:0] rD;
   reg [4:0] shamt;
   reg [5:0] funct;
   reg [15:0] imm;
   reg [25:0] jumpaddr;
-  reg [31:0] ResMemory;
-
+  
+  // shortcuts
+  reg [31:0] rS_value;
+  reg [31:0] rT_value;
+  reg [31:0] resMemory;
   reg [31:0] resExecute;
 
   always begin
@@ -98,7 +104,7 @@ module CPU_FSM();
       end
 
       Decode: begin
-        // split IRegister into rS_value, rT_value, imm, rD, shamt, and funct
+        // split IRegister into rS, rT, imm, rD, shamt, and funct
         opcode <= IRegister[31:26];
         rS <= IRegister[25:21];
         rT <= IRegister[20:16];
@@ -114,8 +120,8 @@ module CPU_FSM();
         case(opcode)
           // R-type Execute
           RTYPE: begin
+            regFile regFile_RTYPEExecute (rS_value, rT_value, NULL, rS, rT, NULL, Read, clk);
             case(funct)
-              regFile myregFile (rS_value, rT_value, NULL, rS, rT, NULL, Read, clk);
               ADD, ADDU: resExecute <= rS_value + rT_value; //right now everything is unsigned... flags are deprioritized
               AND: resExecute <= rS_value & rT_value;
               NOR: resExecute <= ~(rS_value | rT_value);
@@ -179,7 +185,7 @@ module CPU_FSM();
           end
 
           JAL: begin
-            happyregister <= ProgCounter; //happyregister needs to be ra
+            regFile regFile_JALExecute(NULL, NULL, ProgCounter, NULL, NULL, reg_ra, Write, clk);
             ProgCounter <= jumpaddr;
             stage <= IFetch;
           end
@@ -202,7 +208,7 @@ module CPU_FSM();
           // R-type Writeback
           RTYPE: begin
             case(funct)
-              ADD, ADDU, AND, NOR, OR, SLL, SLLV, SLT, SRA, SRAV, SRL, SRLV, SUB, SUBU, XOR: IRegister[rD_value] <= resExecute;
+              ADD, ADDU, AND, NOR, OR, SLL, SLLV, SLT, SRA, SRAV, SRL, SRLV, SUB, SUBU, XOR: rD_value <= resExecute;
 
               // funct undefined
               default: $display("DIE IN RTYPE WRITEBACK");
@@ -212,7 +218,7 @@ module CPU_FSM();
           // I-type Writeback
           ADDI, ADDIU, ANDI, ORI: IRegister[rT_value] <= resExecute;
           BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm;
-          LW: IRegister[rT_value] <= ResMemory;
+          LW: IRegister[rT_value] <= resMemory;
 
           // opcode undefined
           default: $display("DIE IN WRITEBACK");
