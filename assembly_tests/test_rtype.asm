@@ -16,3 +16,5 @@ sub $s5, $t0, $t1    # 0x0000008b
 subu $s6, $t1, $t0   # 0xffffff75
 xor $s7, $t1, $t0    # 0x000000b5
 addu $t8, $t1, $t0   # 0x00000349
+
+syscall
