@@ -102,6 +102,8 @@ module CPU_FSM();
   wire [31:0] ReadData1, ReadData2;
   regFile regFile_0(ReadData1, ReadData2, WriteData, ReadRegister1, ReadRegister2, WriteRegister, WriteEnable, clk);
 
+  IMemory IMemory_0(IRegister, clk, ProgCounter);
+        
   always begin
     #HALFCLK clk = ~clk;
   end
@@ -110,7 +112,6 @@ module CPU_FSM();
     case(stage)
       IFetch: begin
         // load memory module, give clock and pc, store stuff in IRegister
-        //IMemory myMem (IRegister, clk, ProgCounter);
         ProgCounter <= ProgCounter + 4;
         stage <= Decode;
       end
