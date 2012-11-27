@@ -41,7 +41,6 @@ module CPU_FSM();
 //  parameter BREAK   = 6'b001101;
 //  parameter DIV     = 6'b011010;
 //  parameter DIVU    = 6'b011011;
-//  parameter JALR    = 6'b001001;
 //  parameter JR      = 6'b001000;
 //  parameter MFHI    = 6'b010000;
 //  parameter MFLO    = 6'b010010;
@@ -64,20 +63,21 @@ module CPU_FSM();
 //  parameter SYSCALL   = 6'b001100;
   parameter XOR     = 6'b100110; //code complete: test pending
   
-  reg [3:0] stage;
-  reg [5:0] opcode;
   reg clk;
-  reg [4:0] destReg;
+  reg [3:0] stage;
+  reg [9:0] ProgCounter;
+  reg [31:0] IRegister;
+  reg [5:0] opcode;
   reg [4:0] rS;
   reg [4:0] rT;
-  reg [15:0] imm;
   reg [4:0] rD;
   reg [4:0] shamt;
   reg [5:0] funct;
-  reg [31:0] IRegister;
-  reg [9:0] ProgCounter;
+  reg [15:0] imm;
+  reg [25:0] jumpaddr;
+  reg [31:0] ResMemory;
   
-  integer resExecute;
+  reg [31:0] resExecute;
 
   always begin
     #HALFCLK clk = ~clk;
@@ -97,18 +97,22 @@ module CPU_FSM();
         opcode <= IRegister[31:26];
         rS <= IRegister[25:21];
         rT <= IRegister[20:16];
-        imm <= IRegister[15:0];
         rD <= IRegister[15:11];
         shamt <= IRegister[10:6];
         funct <= IRegister[5:0];
+        imm <= IRegister[15:0];
+        jumpaddr <= IRegister[25:0];
         stage <= Execute;
       end
       
       Execute: begin
         case(opcode)
+          // R-type Execute
           RTYPE: begin
             case(funct)
-              ADD, ADDU: resExecute <= rS + rT; //right now everything is unsigned... flags are deprioritized
+              regFile myregFile (rS_value, clk, rS, 0, 0);
+              regFile myregFile2 (rT_value, clk, rT, 0, 0);
+              ADD, ADDU: resExecute <= rS_value + rT; //right now everything is unsigned... flags are deprioritized
               AND: resExecute <= rS & rT;
               NOR: resExecute <= ~(rS | rT);
               OR: resExecute <= rS | rT;
@@ -128,14 +132,53 @@ module CPU_FSM();
             stage <= Writeback;
           end
           
-          ADDI: resExecute <= rS + imm;
-          ADDIU: resExecute <= rS + imm;
-          ANDI: resExecute <= rS & imm;
-//          BEQ:
-//          BNE:
-//          LW:
-          ORI: resExecute <= rS | imm;
-//          SW:
+          // I-type Execute
+          ADDI: begin
+            resExecute <= rS + imm;
+            stage <= Writeback;
+          end
+          
+          ADDIU: begin
+            resExecute <= rS + imm;
+            stage <= Writeback;
+          end
+          
+          ANDI: begin
+            resExecute <= rS & imm;
+            stage <= Writeback;
+          end
+          
+          BEQ: begin
+            resExecute <= rS == rT;
+            stage <= Writeback;
+          end
+          
+          BNE: begin
+            resExecute <= rS != rT;
+            stage <= Writeback;
+          end
+          
+          LW, SW: begin
+            resExecute <= rS + imm;
+            stage <= Memory;
+          end
+          
+          ORI: begin
+            resExecute <= rS | imm;
+            stage <= Writeback;
+          end
+          
+          // J-type Execute
+          J: begin
+            ProgCounter <= jumpaddr;
+            stage <= IFetch;
+          end
+          
+          JAL: begin
+            happyregister <= ProgCounter; //happyregister needs to be ra
+            ProgCounter <= jumpaddr;
+            stage <= IFetch;
+          end
           
           // opcode undefined
           default: $display("DIE IN EXECUTE");
@@ -152,6 +195,7 @@ module CPU_FSM();
         
       Writeback: begin
         case(opcode)
+          // R-type Writeback
           RTYPE: begin
             case(funct)
               ADD, ADDU, AND, NOR, OR, SLL, SLLV, SLT, SRA, SRAV, SRL, SRLV, SUB, SUBU, XOR: IRegister[rD] <= resExecute;
@@ -160,6 +204,11 @@ module CPU_FSM();
               default: $display("DIE IN RTYPE WRITEBACK");
             endcase
           end
+          
+          // I-type Writeback
+          ADDI, ADDIU, ANDI, ORI: IRegister[rT] <= resExecute;
+          BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm;
+          LW: IRegister[rT] <= ResMemory;
 
           // opcode undefined
           default: $display("DIE IN WRITEBACK");
