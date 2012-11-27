@@ -9,6 +9,11 @@ module CPU_FSM();
   // CPU parameters
   parameter HALFCLK = 5;
   
+  // regfile parameters
+  parameter Read  = 0;
+  parameter Write = 1;
+  parameter NULL  = 0;
+  
   // stage parameters
   parameter IFetch    = 4'h0;
   parameter Decode    = 4'h1;
@@ -68,8 +73,8 @@ module CPU_FSM();
   reg [9:0] ProgCounter;
   reg [31:0] IRegister;
   reg [5:0] opcode;
-  reg [4:0] rS;
-  reg [4:0] rT;
+  reg [4:0] rS_value;
+  reg [4:0] rT_value;
   reg [4:0] rD;
   reg [4:0] shamt;
   reg [5:0] funct;
@@ -93,7 +98,7 @@ module CPU_FSM();
       end
       
       Decode: begin
-        // split IRegister into rS, rT, imm, rD, shamt, and funct
+        // split IRegister into rS_value, rT_value, imm, rD, shamt, and funct
         opcode <= IRegister[31:26];
         rS <= IRegister[25:21];
         rT <= IRegister[20:16];
@@ -110,21 +115,20 @@ module CPU_FSM();
           // R-type Execute
           RTYPE: begin
             case(funct)
-              regFile myregFile (rS_value, clk, rS, 0, 0);
-              regFile myregFile2 (rT_value, clk, rT, 0, 0);
-              ADD, ADDU: resExecute <= rS_value + rT; //right now everything is unsigned... flags are deprioritized
-              AND: resExecute <= rS & rT;
-              NOR: resExecute <= ~(rS | rT);
-              OR: resExecute <= rS | rT;
-              SLL: resExecute <= rT << shamt;
-              SLLV: resExecute <= rT << rS[4:0];
-              SLT: resExecute <= rS < rT;
-              SRA: resExecute <= rT >>> shamt;
-              SRAV: resExecute <= rT >>> rS[4:0];
-              SRL: resExecute <= rT >> shamt;
-              SRLV: resExecute <= rT >> rS[4:0];
-              SUB, SUBU: resExecute <= rS - rT; //right now everything is unsigned... flags are deprioritized
-              XOR: resExecute <= rS ^ rT;
+              regFile myregFile (rS_value, rT_value, NULL, rS, rT, NULL, Read, clk);
+              ADD, ADDU: resExecute <= rS_value + rT_value; //right now everything is unsigned... flags are deprioritized
+              AND: resExecute <= rS_value & rT_value;
+              NOR: resExecute <= ~(rS_value | rT_value);
+              OR: resExecute <= rS_value | rT_value;
+              SLL: resExecute <= rT_value << shamt;
+              SLLV: resExecute <= rT_value << rS_value[4:0];
+              SLT: resExecute <= rS_value < rT_value;
+              SRA: resExecute <= rT_value >>> shamt;
+              SRAV: resExecute <= rT_value >>> rS_value[4:0];
+              SRL: resExecute <= rT_value >> shamt;
+              SRLV: resExecute <= rT_value >> rS_value[4:0];
+              SUB, SUBU: resExecute <= rS_value - rT_value; //right now everything is unsigned... flags are deprioritized
+              XOR: resExecute <= rS_value ^ rT_value;
               
               // funct undefined
               default: $display("DIE IN RTYPE EXECUTE");
@@ -134,37 +138,37 @@ module CPU_FSM();
           
           // I-type Execute
           ADDI: begin
-            resExecute <= rS + imm;
+            resExecute <= rS_value + imm;
             stage <= Writeback;
           end
           
           ADDIU: begin
-            resExecute <= rS + imm;
+            resExecute <= rS_value + imm;
             stage <= Writeback;
           end
           
           ANDI: begin
-            resExecute <= rS & imm;
+            resExecute <= rS_value & imm;
             stage <= Writeback;
           end
           
           BEQ: begin
-            resExecute <= rS == rT;
+            resExecute <= rS_value == rT_value;
             stage <= Writeback;
           end
           
           BNE: begin
-            resExecute <= rS != rT;
+            resExecute <= rS_value != rT_value;
             stage <= Writeback;
           end
           
           LW, SW: begin
-            resExecute <= rS + imm;
+            resExecute <= rS_value + imm;
             stage <= Memory;
           end
           
           ORI: begin
-            resExecute <= rS | imm;
+            resExecute <= rS_value | imm;
             stage <= Writeback;
           end
           
@@ -206,9 +210,9 @@ module CPU_FSM();
           end
           
           // I-type Writeback
-          ADDI, ADDIU, ANDI, ORI: IRegister[rT] <= resExecute;
+          ADDI, ADDIU, ANDI, ORI: IRegister[rT_value] <= resExecute;
           BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm;
-          LW: IRegister[rT] <= ResMemory;
+          LW: IRegister[rT_value] <= ResMemory;
 
           // opcode undefined
           default: $display("DIE IN WRITEBACK");
