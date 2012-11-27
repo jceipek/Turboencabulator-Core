@@ -67,14 +67,14 @@ module CPU_FSM();
   parameter SRLV    = 6'b000110; //code complete: test pending
   parameter SUB     = 6'b100010; //code complete: test pending
   parameter SUBU    = 6'b100011; //code complete: test pending
-//  parameter SYSCALL   = 6'b001100;
+  parameter SYSCALL = 6'b001100;
   parameter XOR     = 6'b100110; //code complete: test pending
 
   // CPU regs
-  reg clk;
-  reg [3:0] stage;
+  reg clk = 0;
+  reg [3:0] stage = IFetch;
 
-  reg [9:0] ProgCounter;
+  reg [9:0] ProgCounter = 0;
   reg [31:0] HiValue;
   reg [31:0] LoValue;
   
@@ -242,6 +242,8 @@ module CPU_FSM();
                 resExecute <= rS_value - rT_value;
                 stage <= Writeback;
               end
+              
+              SYSCALL: $stop();
               
               XOR: begin
                 resExecute <= rS_value ^ rT_value;
