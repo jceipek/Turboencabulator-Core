@@ -18,6 +18,7 @@ module regFile (ReadData1, ReadData2, WriteData, ReadRegister1, ReadRegister2, W
     // Asynchronous read logic
     assign ReadData1 = registers[ReadRegister1];
     assign ReadData2 = registers[ReadRegister2];
+    
+    $writememb("out.dat", registers);
   end
 endmodule
-
