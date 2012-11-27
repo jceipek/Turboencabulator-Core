@@ -10,6 +10,11 @@ module CPU_FSM();
   // CPU parameters
   parameter HALFCLK = 5;
 
+  // regfile parameters
+  parameter Read  = 0;
+  parameter Write = 1;
+  parameter NULL  = 0;
+  
   // stage parameters
   parameter IFetch    = 4'h0;
   parameter Decode    = 4'h1;
@@ -69,8 +74,8 @@ module CPU_FSM();
   reg [9:0] ProgCounter;
   reg [31:0] IRegister;
   reg [5:0] opcode;
-  reg [4:0] rS;
-  reg [4:0] rT;
+  reg [4:0] rS_value;
+  reg [4:0] rT_value;
   reg [4:0] rD;
   reg [4:0] shamt;
   reg [5:0] funct;
@@ -114,6 +119,7 @@ module CPU_FSM();
             regFile myregFile1 (rT_value, clk, 0, rT, 0);
             regFile myregFile2 (rD_value, clk, 0, rD, 0);
             case(funct)
+              regFile myregFile (rS_value, rT_value, NULL, rS, rT, NULL, Read, clk);
               ADD, ADDU: resExecute <= rS_value + rT_value; //right now everything is unsigned... flags are deprioritized
               AND: resExecute <= rS_value & rT_value;
               NOR: resExecute <= ~(rS_value | rT_value);
