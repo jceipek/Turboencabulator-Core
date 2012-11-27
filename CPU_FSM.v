@@ -108,7 +108,7 @@ module CPU_FSM();
         case(opcode)
           RTYPE: begin
             case(funct)
-              ADD, ADDU: resExecute <= rS + rT;
+              ADD, ADDU: resExecute <= rS + rT; //right now everything is unsigned... flags are deprioritized
               AND: resExecute <= rS & rT;
               NOR: resExecute <= ~(rS | rT);
               OR: resExecute <= rS | rT;
@@ -119,7 +119,7 @@ module CPU_FSM();
               SRAV: resExecute <= rT >>> rS[4:0];
               SRL: resExecute <= rT >> shamt;
               SRLV: resExecute <= rT >> rS[4:0];
-              SUB, SUBU: resExecute <= rS - rT;
+              SUB, SUBU: resExecute <= rS - rT; //right now everything is unsigned... flags are deprioritized
               XOR: resExecute <= rS ^ rT;
               
               // funct undefined
@@ -127,6 +127,15 @@ module CPU_FSM();
             endcase
             stage <= Writeback;
           end
+          
+          ADDI: resExecute <= rS + imm;
+          ADDIU: resExecute <= rS + imm;
+          ANDI: resExecute <= rS & imm;
+//          BEQ:
+//          BNE:
+//          LW:
+          ORI: resExecute <= rS | imm;
+//          SW:
           
           // opcode undefined
           default: $display("DIE IN EXECUTE");

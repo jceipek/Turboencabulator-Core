@@ -11,7 +11,7 @@ module IMemory(DataOut, clk, ProgCounter);
     input clk;
     input[9:0] ProgCounter;
 
-    reg [31:0] mem[1023:0];
+    reg [31:0] mem[1023:0]; // 1024 rows of 32-bit lines
 
     integer index; // Used only for debugging
 

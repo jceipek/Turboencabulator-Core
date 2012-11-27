@@ -12,11 +12,11 @@ module memory(clk, regWE, Addr,
   integer index;
   reg [31:0] mem[1023:0]; // 1024 rows of 32-bit lines
 
-always @(posedge clk)
-  if (regWE)
-    mem[Addr] <= DataIn;
+  always @(posedge clk)
+    if (regWE)
+      mem[Addr] <= DataIn;
 
-initial begin
+  initial begin
     // Read the code into memory
     $readmemb("add.dat", mem);
 
@@ -24,8 +24,8 @@ initial begin
     for(index = 0; index < 1024; index = index + 1) begin
         $display("mem[%d] = %b", index[9:0], mem[index]);
     end
-end
+  end
 
-assign DataOut = mem[Addr];
+  assign DataOut = mem[Addr];
 
 endmodule
