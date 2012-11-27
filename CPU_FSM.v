@@ -8,7 +8,7 @@ Computer Architecture, Olin College Fall 2012 */
 module CPU_FSM();
   // CPU parameters
   parameter HALFCLK = 5;
-  
+
   // stage parameters
   parameter IFetch    = 4'h0;
   parameter Decode    = 4'h1;
@@ -19,7 +19,7 @@ module CPU_FSM();
   // opcode parameters
   // R-type
   parameter RTYPE = 6'b000000;
-  
+
   // I-type
   parameter ADDI  = 6'b001000;
   parameter ADDIU = 6'b001001;
@@ -29,11 +29,11 @@ module CPU_FSM();
   parameter LW    = 6'b100011;
   parameter ORI   = 6'b001101;
   parameter SW    = 6'b101011;
-  
+
   // J-type
   parameter J     = 6'b000010;
   parameter JAL   = 6'b000011;
-  
+
   // RTYPE parameters
   parameter ADD     = 6'b100000; //code complete: test pending
   parameter ADDU    = 6'b100001; //code complete: test pending
@@ -62,7 +62,7 @@ module CPU_FSM();
   parameter SUBU    = 6'b100011; //code complete: test pending
 //  parameter SYSCALL   = 6'b001100;
   parameter XOR     = 6'b100110; //code complete: test pending
-  
+
   reg clk;
   reg [3:0] stage;
   reg [9:0] ProgCounter;
@@ -76,13 +76,13 @@ module CPU_FSM();
   reg [15:0] imm;
   reg [25:0] jumpaddr;
   reg [31:0] ResMemory;
-  
+
   reg [31:0] resExecute;
 
   always begin
     #HALFCLK clk = ~clk;
   end
-  
+
   always @(posedge clk) begin
     case(stage)
       IFetch: begin
@@ -91,7 +91,7 @@ module CPU_FSM();
         ProgCounter <= ProgCounter + 4;
         stage <= Decode;
       end
-      
+
       Decode: begin
         // split IRegister into rS, rT, imm, rD, shamt, and funct
         opcode <= IRegister[31:26];
@@ -104,119 +104,120 @@ module CPU_FSM();
         jumpaddr <= IRegister[25:0];
         stage <= Execute;
       end
-      
+
       Execute: begin
         case(opcode)
           // R-type Execute
           RTYPE: begin
             case(funct)
-              regFile myregFile (rS_value, clk, rS, 0, 0);
-              regFile myregFile2 (rT_value, clk, rT, 0, 0);
-              ADD, ADDU: resExecute <= rS_value + rT; //right now everything is unsigned... flags are deprioritized
-              AND: resExecute <= rS & rT;
-              NOR: resExecute <= ~(rS | rT);
-              OR: resExecute <= rS | rT;
-              SLL: resExecute <= rT << shamt;
-              SLLV: resExecute <= rT << rS[4:0];
-              SLT: resExecute <= rS < rT;
-              SRA: resExecute <= rT >>> shamt;
-              SRAV: resExecute <= rT >>> rS[4:0];
-              SRL: resExecute <= rT >> shamt;
-              SRLV: resExecute <= rT >> rS[4:0];
-              SUB, SUBU: resExecute <= rS - rT; //right now everything is unsigned... flags are deprioritized
-              XOR: resExecute <= rS ^ rT;
-              
+              regFile myregFile0 (rS_value, clk, 0, rS, 0);
+              regFile myregFile1 (rT_value, clk, 0, rT, 0);
+              regFile myregFile2 (rD_value, clk, 0, rD, 0);
+              ADD, ADDU: resExecute <= rS_value + rT_value; //right now everything is unsigned... flags are deprioritized
+              AND: resExecute <= rS_value & rT_value;
+              NOR: resExecute <= ~(rS_value | rT_value);
+              OR: resExecute <= rS_value | rT_value;
+              SLL: resExecute <= rT_value << shamt;
+              SLLV: resExecute <= rT_value << rS_value[4:0];
+              SLT: resExecute <= rS_value < rT_value;
+              SRA: resExecute <= rT_value >>> shamt;
+              SRAV: resExecute <= rT_value >>> rS_value[4:0];
+              SRL: resExecute <= rT_value >> shamt;
+              SRLV: resExecute <= rT_value >> rS_value[4:0];
+              SUB, SUBU: resExecute <= rS_value - rT_value; //right now everything is unsigned... flags are deprioritized
+              XOR: resExecute <= rS_value ^ rT_value;
+
               // funct undefined
               default: $display("DIE IN RTYPE EXECUTE");
             endcase
             stage <= Writeback;
           end
-          
+
           // I-type Execute
           ADDI: begin
-            resExecute <= rS + imm;
+            resExecute <= rS_value + imm;
             stage <= Writeback;
           end
-          
+
           ADDIU: begin
-            resExecute <= rS + imm;
+            resExecute <= rS_value + imm;
             stage <= Writeback;
           end
-          
+
           ANDI: begin
-            resExecute <= rS & imm;
+            resExecute <= rS_value & imm;
             stage <= Writeback;
           end
-          
+
           BEQ: begin
-            resExecute <= rS == rT;
+            resExecute <= rS_value == rT_value;
             stage <= Writeback;
           end
-          
+
           BNE: begin
-            resExecute <= rS != rT;
+            resExecute <= rS_value != rT_value;
             stage <= Writeback;
           end
-          
+
           LW, SW: begin
-            resExecute <= rS + imm;
+            resExecute <= rS_value + imm;
             stage <= Memory;
           end
-          
+
           ORI: begin
-            resExecute <= rS | imm;
+            resExecute <= rS_value | imm;
             stage <= Writeback;
           end
-          
+
           // J-type Execute
           J: begin
             ProgCounter <= jumpaddr;
             stage <= IFetch;
           end
-          
+
           JAL: begin
             happyregister <= ProgCounter; //happyregister needs to be ra
             ProgCounter <= jumpaddr;
             stage <= IFetch;
           end
-          
+
           // opcode undefined
           default: $display("DIE IN EXECUTE");
         endcase
       end
-        
+
       Memory: begin
         case(opcode)
           // opcode undefined
           default: $display("DIE IN MEMORY");
         endcase
         stage <= Writeback;
-      end 
-        
+      end
+
       Writeback: begin
         case(opcode)
           // R-type Writeback
           RTYPE: begin
             case(funct)
-              ADD, ADDU, AND, NOR, OR, SLL, SLLV, SLT, SRA, SRAV, SRL, SRLV, SUB, SUBU, XOR: IRegister[rD] <= resExecute;
-              
+              ADD, ADDU, AND, NOR, OR, SLL, SLLV, SLT, SRA, SRAV, SRL, SRLV, SUB, SUBU, XOR: IRegister[rD_value] <= resExecute;
+
               // funct undefined
               default: $display("DIE IN RTYPE WRITEBACK");
             endcase
           end
-          
+
           // I-type Writeback
-          ADDI, ADDIU, ANDI, ORI: IRegister[rT] <= resExecute;
+          ADDI, ADDIU, ANDI, ORI: IRegister[rT_value] <= resExecute;
           BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm;
-          LW: IRegister[rT] <= ResMemory;
+          LW: IRegister[rT_value] <= ResMemory;
 
           // opcode undefined
           default: $display("DIE IN WRITEBACK");
         endcase
         stage <= IFetch;
       end
-      
-      // stage undefined  
+
+      // stage undefined
       default: $display("DIE");
     endcase
   end
