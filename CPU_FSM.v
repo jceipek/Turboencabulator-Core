@@ -1,9 +1,10 @@
 /* CPU_FSM.v
-part of project TurToencabulator
+part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
 `include "IMemory.v"
+`include "regFile.v"
 
 module CPU_FSM();
   // CPU parameters
@@ -109,10 +110,10 @@ module CPU_FSM();
         case(opcode)
           // R-type Execute
           RTYPE: begin
+            regFile myregFile0 (rS_value, clk, 0, rS, 0);
+            regFile myregFile1 (rT_value, clk, 0, rT, 0);
+            regFile myregFile2 (rD_value, clk, 0, rD, 0);
             case(funct)
-              regFile myregFile0 (rS_value, clk, 0, rS, 0);
-              regFile myregFile1 (rT_value, clk, 0, rT, 0);
-              regFile myregFile2 (rD_value, clk, 0, rD, 0);
               ADD, ADDU: resExecute <= rS_value + rT_value; //right now everything is unsigned... flags are deprioritized
               AND: resExecute <= rS_value & rT_value;
               NOR: resExecute <= ~(rS_value | rT_value);
