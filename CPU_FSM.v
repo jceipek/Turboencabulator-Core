@@ -34,9 +34,9 @@ module CPU_FSM();
   parameter ANDI  = 6'b001100; //code complete: test pending
   parameter BEQ   = 6'b000100; //code complete: test pending
   parameter BNE   = 6'b000101; //code complete: test pending
-  parameter LW    = 6'b100011; //code PENDING
+  parameter LW    = 6'b100011; //code complete: test pending
   parameter ORI   = 6'b001101; //code complete: test pending
-  parameter SW    = 6'b101011; //code PENDING
+  parameter SW    = 6'b101011; //code complete: test pending
 
   // J-type
   parameter J     = 6'b000010; //code complete: test pending
@@ -46,7 +46,7 @@ module CPU_FSM();
   parameter ADD     = 6'b100000; //code complete: test pending
   parameter ADDU    = 6'b100001; //code complete: test pending
   parameter AND     = 6'b100100; //code complete: test pending
-//  parameter BREAK   = 6'b001101;
+  parameter BREAK   = 6'b001101; //code complete: test pending
   parameter DIV     = 6'b011010; //code complete: test pending
   parameter DIVU    = 6'b011011; //code complete: test pending
   parameter JR      = 6'b001000; //code complete: test pending
@@ -105,7 +105,14 @@ module CPU_FSM();
 
   // instantiate the IMemory
   IMemory IMemory_0(IRegisterWire, clk, ProgCounter);
-        
+  
+  // instantiate the DMemory
+  reg DM_WriteEnable;
+  reg [31:0] DM_ReadAddr, DM_WriteAddr;
+  reg [31:0] DM_WriteData;
+  wire [31:0] DM_ReadData;
+  DMemory DMemory_0(DM_ReadData, DM_WriteData, DM_ReadAddr, DM_WriteAddr, DM_WriteEnable, clk);
+  
   always begin
     #HALFCLK clk = ~clk;
   end
@@ -249,7 +256,7 @@ module CPU_FSM();
                 stage <= Writeback;
               end
               
-              SYSCALL: $stop();
+              BREAK, SYSCALL: $stop();
               
               XOR: begin
                 resExecute <= rS_value ^ rT_value;
@@ -319,12 +326,24 @@ module CPU_FSM();
 
       Memory: begin
         case(opcode)
+          LW: begin
+            DM_WriteEnable <= Read;
+            DM_ReadAddr <= resExecute;
+            #DELAY;
+            resMemory <= DM_ReadData;
+            stage <= Writeback;
+          end
+          
+          SW: begin
+            DM_WriteAddr <= resExecute;
+            DM_WriteData <= rT_value;
+            DM_WriteEnable <= Write;
+            stage <= IFetch;
+          end
+          
           // opcode undefined
           default: $display("DIE IN MEMORY");
         endcase
-
-        #DELAY;
-        stage <= Writeback;
       end
 
       Writeback: begin
@@ -367,7 +386,7 @@ module CPU_FSM();
       end
 
       // stage undefined
-      default: $display("DIE");
+      default: $display("DIE IN CYCLE");
     endcase
   end
 endmodule

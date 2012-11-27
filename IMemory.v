@@ -22,7 +22,7 @@ module IMemory(DataOut, clk, ProgCounter);
         if (`DEBUG_MODE) begin
             // Loop through every row of memory and display it
             for(index = 0; index < 1024; index = index + 1) begin
-                $display("mem[%d] = %b", index[9:0], mem[index]);
+                $display("IMem[%d] = %b", index[9:0], mem[index]);
             end
         end
     end

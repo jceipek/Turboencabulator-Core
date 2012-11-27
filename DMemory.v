@@ -3,10 +3,11 @@ part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
-module memory(clk, regWE, Addr,
-                DataIn, DataOut);
+`define DEBUG_MODE 0
+
+module DMemory(DataOut, DataIn, ReadAddr, WriteAddr, regWE, clk);
   input clk, regWE;
-  input[9:0] Addr;
+  input[9:0] ReadAddr, WriteAddr;
   input[31:0] DataIn;
   output[31:0]  DataOut;
   integer index;
@@ -14,19 +15,21 @@ module memory(clk, regWE, Addr,
 
   always @(posedge clk) begin
     if (regWE)
-      mem[Addr] <= DataIn;
+      mem[WriteAddr/4] <= DataIn;
   end
 
   initial begin
     // Read the code into memory
-    $readmemb("add.dat", mem);
+    $readmemb("dmemory.dat", mem);
 
-    // Loop through every row of memory and display it
-    for(index = 0; index < 1024; index = index + 1) begin
-        $display("mem[%d] = %b", index[9:0], mem[index]);
-    end
+        if (`DEBUG_MODE) begin
+            // Loop through every row of memory and display it
+            for(index = 0; index < 1024; index = index + 1) begin
+                $display("DMem[%d] = %b", index[9:0], mem[index]);
+            end
+        end
   end
 
-  assign DataOut = mem[Addr/4];
+  assign DataOut = mem[ReadAddr/4];
 
 endmodule
