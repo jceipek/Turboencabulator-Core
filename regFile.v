@@ -4,8 +4,8 @@ part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
-module regFile (clk, regWE, Addr, 
-                DataIn, DataOut);
+module regFile (DaraOut, clk, regWE, Addr, 
+                DataIn);
   input clk, regWE;
   input[4:0] Addr;
   input[31:0] DataIn;

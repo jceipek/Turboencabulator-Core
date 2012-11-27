@@ -75,9 +75,9 @@ module CPU_FSM();
   reg [5:0] funct;
   reg [15:0] imm;
   reg [25:0] jumpaddr;
-  reg [31:0] ResMemory; // Make it right
+  reg [31:0] ResMemory;
   
-  integer resExecute;
+  reg [31:0] resExecute;
 
   always begin
     #HALFCLK clk = ~clk;
@@ -110,7 +110,9 @@ module CPU_FSM();
           // R-type Execute
           RTYPE: begin
             case(funct)
-              ADD, ADDU: resExecute <= rS + rT; //right now everything is unsigned... flags are deprioritized
+              regFile myregFile (rS_value, clk, rS, 0, 0);
+              regFile myregFile2 (rT_value, clk, rT, 0, 0);
+              ADD, ADDU: resExecute <= rS_value + rT; //right now everything is unsigned... flags are deprioritized
               AND: resExecute <= rS & rT;
               NOR: resExecute <= ~(rS | rT);
               OR: resExecute <= rS | rT;
@@ -173,7 +175,7 @@ module CPU_FSM();
           end
           
           JAL: begin
-            happyregister <= ProgCounter;
+            happyregister <= ProgCounter; //happyregister needs to be ra
             ProgCounter <= jumpaddr;
             stage <= IFetch;
           end
