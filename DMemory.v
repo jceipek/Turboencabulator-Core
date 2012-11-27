@@ -27,6 +27,6 @@ module memory(clk, regWE, Addr,
     end
   end
 
-  assign DataOut = mem[Addr];
+  assign DataOut = mem[Addr/4];
 
 endmodule

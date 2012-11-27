@@ -113,9 +113,9 @@ module CPU_FSM();
     case(stage)
       IFetch: begin
         // load memory module, give clock and pc, store stuff in IRegister
+        IRegister = IRegisterWire;
         ProgCounter <= ProgCounter + 4;
         stage <= Decode;
-        assign IRegister = IRegisterWire;
       end
 
       Decode: begin
@@ -133,11 +133,11 @@ module CPU_FSM();
 
       Execute: begin
         // Read rS_value and rT_value
-        assign WriteEnable = Read;
-        assign rS = ReadRegister1;
-        assign rT = ReadRegister2;
-        assign rS_value = ReadData1;
-        assign rT_value = ReadData2;
+        WriteEnable = Read;
+        rS = ReadRegister1;
+        rT = ReadRegister2;
+        rS_value = ReadData1;
+        rT_value = ReadData2;
             
         case(opcode)
           // R-type Execute

@@ -13,6 +13,8 @@ module regFile (ReadData1, ReadData2, WriteData, ReadRegister1, ReadRegister2, W
 
 // Synchronous write logic
   always @(posedge clk) begin
+    assign registers[0] = 0;
+    
     if (WriteEnable) registers[WriteRegister] <= WriteData;
 
     // Asynchronous read logic
