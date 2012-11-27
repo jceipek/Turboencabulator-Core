@@ -8,7 +8,8 @@ Computer Architecture, Olin College Fall 2012 */
 
 module CPU_FSM();
   // CPU parameters
-  parameter HALFCLK = 5;
+  parameter DELAY = 5;
+  parameter HALFCLK = 50;
 
   // regfile parameters
   parameter Read  = 0;
@@ -25,7 +26,7 @@ module CPU_FSM();
 
   // opcode parameters
   // R-type
-  parameter RTYPE = 6'b000000;
+  parameter RTYPE = 6'b000000; //code complete: test pending
 
   // I-type
   parameter ADDI  = 6'b001000; //code complete: test pending
@@ -33,9 +34,9 @@ module CPU_FSM();
   parameter ANDI  = 6'b001100; //code complete: test pending
   parameter BEQ   = 6'b000100; //code complete: test pending
   parameter BNE   = 6'b000101; //code complete: test pending
-  parameter LW    = 6'b100011; //code complete: test pending
+  parameter LW    = 6'b100011; //code PENDING
   parameter ORI   = 6'b001101; //code complete: test pending
-  parameter SW    = 6'b101011; //code complete: test pending
+  parameter SW    = 6'b101011; //code PENDING
 
   // J-type
   parameter J     = 6'b000010; //code complete: test pending
@@ -67,7 +68,7 @@ module CPU_FSM();
   parameter SRLV    = 6'b000110; //code complete: test pending
   parameter SUB     = 6'b100010; //code complete: test pending
   parameter SUBU    = 6'b100011; //code complete: test pending
-  parameter SYSCALL = 6'b001100;
+  parameter SYSCALL = 6'b001100; //code complete: test pending
   parameter XOR     = 6'b100110; //code complete: test pending
 
   // CPU regs
@@ -97,12 +98,12 @@ module CPU_FSM();
 
   // instantiate the regFile
   reg WriteEnable;
-  reg [4:0] WriteRegister;
+  reg [4:0] ReadRegister1, ReadRegister2, WriteRegister;
   reg [31:0] WriteData;
-  wire [4:0] ReadRegister1, ReadRegister2;
   wire [31:0] ReadData1, ReadData2;
   regFile regFile_0(ReadData1, ReadData2, WriteData, ReadRegister1, ReadRegister2, WriteRegister, WriteEnable, clk);
 
+  // instantiate the IMemory
   IMemory IMemory_0(IRegisterWire, clk, ProgCounter);
         
   always begin
@@ -112,8 +113,9 @@ module CPU_FSM();
   always @(posedge clk) begin
     case(stage)
       IFetch: begin
-        // load memory module, give clock and pc, store stuff in IRegister
         IRegister = IRegisterWire;
+
+        #DELAY;
         ProgCounter <= ProgCounter + 4;
         stage <= Decode;
       end
@@ -128,17 +130,21 @@ module CPU_FSM();
         funct <= IRegister[5:0];
         imm <= IRegister[15:0];
         jumpaddr <= IRegister[25:0];
+        
+        #DELAY;
         stage <= Execute;
       end
 
       Execute: begin
         // Read rS_value and rT_value
         WriteEnable = Read;
-        rS = ReadRegister1;
-        rT = ReadRegister2;
+        ReadRegister1 = rS;
+        ReadRegister2 = rT;
+        #DELAY;
         rS_value = ReadData1;
         rT_value = ReadData2;
-            
+        
+        #DELAY;
         case(opcode)
           // R-type Execute
           RTYPE: begin
@@ -316,6 +322,8 @@ module CPU_FSM();
           // opcode undefined
           default: $display("DIE IN MEMORY");
         endcase
+
+        #DELAY;
         stage <= Writeback;
       end
 
@@ -353,6 +361,8 @@ module CPU_FSM();
           // opcode undefined
           default: $display("DIE IN WRITEBACK");
         endcase
+        
+        #DELAY;
         stage <= IFetch;
       end
 

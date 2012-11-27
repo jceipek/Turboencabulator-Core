@@ -10,11 +10,13 @@ module regFile (ReadData1, ReadData2, WriteData, ReadRegister1, ReadRegister2, W
   output reg [31:0] ReadData1, ReadData2;
 
   reg [31:0] registers [31:0]; //32 registers each 32-long
-
-// Synchronous write logic
+  
+  initial begin
+    registers[0] = 0;
+  end
+  
+  // Synchronous write logic
   always @(posedge clk) begin
-    assign registers[0] = 0;
-    
     if (WriteEnable) registers[WriteRegister] <= WriteData;
 
     // Asynchronous read logic
