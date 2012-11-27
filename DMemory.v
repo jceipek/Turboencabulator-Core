@@ -12,9 +12,10 @@ module memory(clk, regWE, Addr,
   integer index;
   reg [31:0] mem[1023:0]; // 1024 rows of 32-bit lines
 
-  always @(posedge clk)
+  always @(posedge clk) begin
     if (regWE)
       mem[Addr] <= DataIn;
+  end
 
   initial begin
     // Read the code into memory

@@ -17,7 +17,7 @@ module IMemory(DataOut, clk, ProgCounter);
 
     initial begin
         // Read the code into memory
-        $readmemb("add.dat", mem, 0, 1023);
+        $readmemb("instructions.dat", mem, 0, 1023);
 
         if (`DEBUG_MODE) begin
             // Loop through every row of memory and display it
