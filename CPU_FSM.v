@@ -1,5 +1,5 @@
 /* CPU_FSM.v
-part of project TurToencabulator
+part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
 
@@ -15,7 +15,7 @@ module CPU_FSM();
   parameter Write = 1;
   parameter reg_zero = 0;
   parameter reg_ra = 31;
-  
+
   // stage parameters
   parameter IFetch    = 3'b000;
   parameter Decode    = 3'b001;
@@ -87,7 +87,7 @@ module CPU_FSM();
   reg [5:0] funct;
   reg [15:0] imm;
   reg [25:0] jumpaddr;
-  
+
   // shortcuts
   reg [31:0] rS_value;
   reg [31:0] rT_value;

@@ -1,4 +1,4 @@
-/* memory.v
+/* IMemory.v
 part of project Turboencabulator
 Julian Ceipek, Yuxin Guan, Philip Z Loh, Sasha Sproch
 Computer Architecture, Olin College Fall 2012 */
