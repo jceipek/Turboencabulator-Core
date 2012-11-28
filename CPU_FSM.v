@@ -36,6 +36,7 @@ module CPU_FSM();
   parameter BNE   = 6'b000101; //code complete: test pending
   parameter LW    = 6'b100011; //code complete: test pending
   parameter ORI   = 6'b001101; //code complete: test pending
+  parameter SLTI  = 6'b001010; //code complete: test pending
   parameter SW    = 6'b101011; //code complete: test pending
 
   // J-type
@@ -255,12 +256,9 @@ module CPU_FSM();
                 resExecute <= rS_value - rT_value;
                 stage <= Writeback;
               end
-              
-              
+                            
               BREAK, SYSCALL: begin
-                 
-              
-                $stop();
+                 $stop();
               end
             
               XOR: begin
@@ -308,10 +306,15 @@ module CPU_FSM();
             resExecute <= rS_value | imm;
             stage <= Writeback;
           end
+          
+          SLTI: begin
+            resExecute <= rS_value < imm;
+            stage <= Writeback;
+          end
 
           // J-type Execute
           J: begin
-            ProgCounter <= jumpaddr;
+            ProgCounter <= jumpaddr*4;
             stage <= IFetch;
           end
 
@@ -320,7 +323,7 @@ module CPU_FSM();
             WriteRegister <= reg_ra;
             WriteData <= ProgCounter;
             WriteEnable <= Write;
-            ProgCounter <= jumpaddr;
+            ProgCounter <= jumpaddr*4;
             stage <= IFetch;
           end
 
@@ -368,13 +371,13 @@ module CPU_FSM();
           end
 
           // I-type Writeback
-          ADDI, ADDIU, ANDI, ORI: begin
+          ADDI, ADDIU, ANDI, ORI, SLTI: begin
             WriteRegister <= rT;
             WriteData <= resExecute;
             WriteEnable <= Write;
           end
           
-          BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm;
+          BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm*4;
           
           LW: begin
             WriteRegister <= rT;

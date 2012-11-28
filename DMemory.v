@@ -15,7 +15,7 @@ module DMemory(DataOut, DataIn, ReadAddr, WriteAddr, regWE, clk);
 
   always @(posedge clk) begin
     if (regWE)
-      mem[WriteAddr/4] <= DataIn;
+      mem[-WriteAddr/4] <= DataIn;
     $writememb("DataOut.dat",mem);
   end
 
@@ -31,6 +31,6 @@ module DMemory(DataOut, DataIn, ReadAddr, WriteAddr, regWE, clk);
         end
   end
 
-  assign DataOut = mem[ReadAddr/4];
+  assign DataOut = mem[-ReadAddr/4];
 
 endmodule
