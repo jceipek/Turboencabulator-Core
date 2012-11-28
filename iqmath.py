@@ -106,7 +106,6 @@ def sqrt_LUT():
         fstring = fstring + res + '\n'
         gstring = gstring + seed + '\n'
         if (ind % 2**16 == 0):
-                print "here"
                 f.write(fstring)
                 g.write(gstring)
                 fstring = ''
@@ -116,7 +115,7 @@ def sqrt_LUT():
                 
 getcontext().prec = 12 + 20
 #asin_LUT()
-sqrt_LUT()
+#sqrt_LUT()
 
 #print i1q31_to_dec('01111111111111100000000000000000')
 #print dec_to_i1q31(Decimal('0.001'))
