@@ -256,8 +256,13 @@ module CPU_FSM();
                 stage <= Writeback;
               end
               
-              BREAK, SYSCALL: $stop();
               
+              BREAK, SYSCALL: begin
+                 
+              
+                $stop();
+              end
+            
               XOR: begin
                 resExecute <= rS_value ^ rT_value;
                 stage <= Writeback;
