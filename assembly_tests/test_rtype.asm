@@ -18,10 +18,9 @@ subu $22, $t1, $t0   # 0xffffff75
 xor $23, $t1, $t0    # 0x000000b5
 addu $24, $t1, $t0   # 0x00000349
 # need break, div, divu, jr, mfhi, mflo, mthi, mtlo, mult, multu, sltu
-sw $9, 1
-lw $25, 1
+sw $9, -4
+lw $25, -4
 div $26, $8, $9
-syscall
 divu $27, $9, $8
 j SkipSyscall
 syscall # this should not happen if j works
@@ -30,9 +29,9 @@ mthi $8
 mtlo $9
 mfhi $28
 mflo $29
-#jal SkipSyscall2
+jal SkipSyscall2
 # if 30 and 4 are the same as 28 and 29, then jal has failed because the mult in SkipSyscall2 should fill hi and lo with different numbers.
-mult $8, $9
+#mult $8, $9
 mfhi $30 # if this line and all following before SkipSyscall2 don't happen, then jr has failed.
 mflo $4
 multu $9, $8
@@ -40,6 +39,6 @@ mfhi $1
 mflo $2
 sltu $3, $8, $9
 syscall
-#SkipSyscall2:
-#mult $8, $9
-#jr $ra
+SkipSyscall2:
+mult $8, $9
+jr $ra
