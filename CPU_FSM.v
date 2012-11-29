@@ -314,7 +314,7 @@ module CPU_FSM();
 
           // J-type Execute
           J: begin
-            ProgCounter <= jumpaddr*4;
+            ProgCounter <= (jumpaddr << 2);
             stage <= IFetch;
           end
 
@@ -323,7 +323,7 @@ module CPU_FSM();
             WriteRegister <= reg_ra;
             WriteData <= ProgCounter;
             WriteEnable <= Write;
-            ProgCounter <= jumpaddr*4;
+            ProgCounter <= (jumpaddr << 2);
             stage <= IFetch;
           end
 
@@ -377,7 +377,7 @@ module CPU_FSM();
             WriteEnable <= Write;
           end
           
-          BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + imm*4;
+          BEQ, BNE: if (resExecute) ProgCounter <= ProgCounter + (imm << 2);
           
           LW: begin
             WriteRegister <= rT;

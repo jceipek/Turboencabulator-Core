@@ -44,6 +44,24 @@ def dec_to_i2q30(x):
         string = bin(int(flip_string, 2) + 1)[2:]
     return sext(string, isneg)
 
+def dec_to_i3q29(x):
+    string = ''
+    isneg = x < 0
+    x = abs(x)
+    for b in range(1,-30,-1):
+        mask = 2.0**b
+        if (x >= mask):
+            string = string + '1'
+            x = x - fix(mask)
+        else:
+            string = string + '0'
+    if isneg:
+        flip_string = ''
+        for a in string:
+            flip_string = flip_string + flip(a)
+        string = bin(int(flip_string, 2) + 1)[2:]
+    return sext(string, isneg)
+
 def dec_to_i7q25(x):
     string = ''
     isneg = x < 0
@@ -121,9 +139,9 @@ def sqrt_fixed(x):
 
 def generate_asin_seeds():
     l = list()
-    seed = '011111111111111'
-    for i in range(2**17):
-        l.append(seed + str(0)*(19-len(bin(i))) + str(bin(i))[2:])
+    seed = '01111111111111'
+    for i in range(2**18):
+        l.append(seed + str(0)*(20-len(bin(i))) + str(bin(i))[2:])
     return l
 
 def asin_LUT():
@@ -216,3 +234,6 @@ getcontext().prec = 12 + 20
 #print dec_to_i1q31(Decimal('0.001'))
 #print dec_to_i7q25(fix('-9.467e-08'))
 #print dec_to_i7q25(fix('-3.347e-08'))
+
+#pi
+#print dec_to_i3q29(fix(pi))
